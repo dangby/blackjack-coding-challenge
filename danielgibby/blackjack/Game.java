@@ -13,6 +13,40 @@ public class Game {
 	private boolean roundOver;
 
 	
+	// constructor
+	
+	public Game() {
+		this.initializeGame();
+	}
+	
+	/**
+	 * run Game Logic through multiple rounds until someone asks to stop
+	 */
+	public void runGameLogic() {
+	
+		while (this.playAgain) {
+			initializeRound();
+			dealFirstTwoCards();
+			calculateHandValues();
+			isRoundOver();
+	
+			//TODO: make asynchronous with state flags rather than a while loop
+			while (!roundOver) {
+				getParticipantsHitOrStay();
+				dealCards(true, true);
+				calculateHandValues();
+				turnCards(true);
+				isRoundOver();
+			}
+			
+			awardPoints();
+			askPlayersIfContinue();
+			cleanupRound();
+		}
+		wrapUpGame();
+	}
+	
+	
 	/**
 	 * ran once per Game of multiple rounds
 	 */
@@ -281,29 +315,9 @@ public class Game {
 	/**
 	 * main while loop, logic could be copied and reused elsewhere
 	 */
-	public void main() {
-		initializeGame();
-		playAgain = true;
-		while (playAgain) {
-			initializeRound();
-			dealFirstTwoCards();
-			calculateHandValues();
-			isRoundOver();
-
-			//TODO: make asynchronous with state flags rather than a while loop
-			while (!roundOver) {
-				getParticipantsHitOrStay();
-				dealCards(true, true);
-				calculateHandValues();
-				turnCards(true);
-				isRoundOver();
-			}
-			
-			awardPoints();
-			askPlayersIfContinue();
-			cleanupRound();
-		}
-		wrapUpGame();
+	public static void main() {
+		Game game = new Game();
+		game.runGameLogic();
 	}
 
 	
