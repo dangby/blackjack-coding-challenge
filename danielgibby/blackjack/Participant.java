@@ -41,6 +41,11 @@ public abstract class Participant {
 	// normal methods
 	
 	/**
+	 * determined by subclasses how to handle hit or stay
+	 */
+	abstract public void hitOrStay(); 
+
+	/**
 	 * create a new Hand and add it to the hands Array, then increment totalParticipantHands
 	 */
 	public void initializeNewHand() {
