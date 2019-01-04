@@ -19,6 +19,10 @@ public class Game {
 		this.initializeGame();
 	}
 	
+	
+	
+	// normal methods
+	
 	/**
 	 * run Game Logic through multiple rounds until someone asks to stop
 	 */
@@ -28,15 +32,15 @@ public class Game {
 			initializeRound();
 			dealFirstTwoCards();
 			calculateHandValues();
-			isRoundOver();
+			calcRoundOver();
 	
 			//TODO: make asynchronous with state flags rather than a while loop
-			while (!roundOver) {
+			while (!isRoundOver()) {
 				getParticipantsHitOrStay();
 				dealCards(true, true);
 				calculateHandValues();
 				turnCards(true);
-				isRoundOver();
+				calcRoundOver();
 			}
 			
 			awardPoints();
@@ -63,7 +67,7 @@ public class Game {
 	 * end of Game
 	 */
 	private void cleanupRound() {
-		roundOver = true;
+		setRoundOver(true);
 		this.deck = null;
 		roundsPlayed++;
 	}
@@ -73,7 +77,7 @@ public class Game {
 	 */
 	private void initializeRound() {
 		this.deck = new Deck();
-		roundOver = false;
+		setRoundOver(false);
 	}
 
 	/**
@@ -109,7 +113,7 @@ public class Game {
 				if (playerCardFaceUp && Participant.PARTICIPANT_TYPE_PLAYER.equals(participant.getParticipantType())) {
 					card.setFaceUp(true);
 				}
-				// give 2nd card face up to Dealer
+				// give 2nd (and subsequent) card face up to Dealer
 				else if (dealerCardFaceUp
 						&& Participant.PARTICIPANT_TYPE_DEALER.equals(participant.getParticipantType())) {
 					card.setFaceUp(true);
@@ -181,7 +185,7 @@ public class Game {
 	 * sets roundOver to false if some Hand still HandPlayState.Hit, true otherwise
 	 * (Stay, Bust or BlackJack)
 	 */
-	private boolean isRoundOver() {
+	private void calcRoundOver() {
 		boolean calcRoundOver = true;
 		for (Participant participant : participants) {
 			for (Hand hand : participant.getHands()) {
@@ -191,7 +195,8 @@ public class Game {
 				}
 			}
 		}
-		return calcRoundOver;
+		// set roundOver to what was determined
+		this.setRoundOver(calcRoundOver);
 	}
 
 	/**
@@ -218,6 +223,12 @@ public class Game {
 
 	/**
 	 * End of round: award points to players and dealer according to predefined rules
+	 * 
+	 * Scoring should happen as follows:
+		A player win over the dealer is worth 1 point.
+		A dealer win over a player is worth 1 point.
+		A player or dealer win with two cards that total 21 is worth 2 points.
+		A player and dealer each with two cards that total 21 are both awarded 1 point.
 	 */
 	private void awardPoints() {
 		// get Dealer total to compare to Hand totals to properly award points
@@ -338,5 +349,13 @@ public class Game {
 
 	public void setPlayAgain(boolean playAgain) {
 		this.playAgain = playAgain;
+	}
+
+	private boolean isRoundOver() {
+		return roundOver;
+	}
+
+	private void setRoundOver(boolean roundOver) {
+		this.roundOver = roundOver;
 	}
 }
