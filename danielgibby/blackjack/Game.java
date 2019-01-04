@@ -11,12 +11,12 @@ public class Game {
 	// per round variables:
 	private Deck deck;
 	private boolean roundOver;
-	int maxNoBustPlayerTotal = 0;
 
+	
 	/**
 	 * ran once per Game of multiple rounds
 	 */
-	protected void initializeGame() {
+	private void initializeGame() {
 		this.dealerParticipantIndex = 0;
 		this.participants[dealerParticipantIndex] = new ParticipantDealer();
 		this.participants[1] = new ParticipantPlayer();
@@ -28,7 +28,7 @@ public class Game {
 	 * clear out any variables or cache that needs to be cleaned between rounds or
 	 * end of Game
 	 */
-	protected void cleanupRound() {
+	private void cleanupRound() {
 		roundOver = true;
 		this.deck = null;
 		roundsPlayed++;
@@ -37,7 +37,7 @@ public class Game {
 	/**
 	 * setup game play for another round
 	 */
-	protected void inializeRound() {
+	private void initializeRound() {
 		this.deck = new Deck();
 		roundOver = false;
 	}
@@ -45,7 +45,7 @@ public class Game {
 	/**
 	 * first deal of 2 cards each to all participants (Dealer and Players)
 	 */
-	protected void dealFirstTwoCards() {
+	private void dealFirstTwoCards() {
 		this.dealCards(false, true);
 		this.dealCards(true, true);
 	}
@@ -55,7 +55,7 @@ public class Game {
 	 * 
 	 * @param firstDeal - if Dealer and firstDeal, will
 	 */
-	protected void dealCards(boolean dealerCardFaceUp, boolean playerCardFaceUp) {
+	private void dealCards(boolean dealerCardFaceUp, boolean playerCardFaceUp) {
 		for (Participant participant : participants) {
 			for (Hand hand : participant.getHands()) {
 
@@ -91,8 +91,11 @@ public class Game {
 	 * set maxPlayerTotal for Dealer to hit if below;
 	 * 
 	 */
-	protected void calculateHandValues() {
-		maxNoBustPlayerTotal = 0;
+	private void calculateHandValues() {
+		
+		// used to give to dealer to match it
+		int maxNoBustPlayerTotal = 0;
+		
 		for (Participant participant : participants) {
 			for (Hand hand : participant.getHands()) {
 
@@ -118,6 +121,9 @@ public class Game {
 				}
 			}
 		}
+		
+		// tell the dealer what the max player total is since they need to at least match it
+		this.getDealer().setMaxNoBustPlayerTotal(maxNoBustPlayerTotal);
 	}
 
 	/**
@@ -127,7 +133,7 @@ public class Game {
 	 * 
 	 * @param faceUp boolean true for faceUp or false for faceDown
 	 */
-	protected void turnCards(boolean faceUp) {
+	private void turnCards(boolean faceUp) {
 		for (Participant participant : participants) {
 			for (Hand hand : participant.getHands()) {
 				for (Card card : hand.getCards()) {
@@ -141,7 +147,7 @@ public class Game {
 	 * sets roundOver to false if some Hand still HandPlayState.Hit, true otherwise
 	 * (Stay, Bust or BlackJack)
 	 */
-	protected boolean isRoundOver() {
+	private boolean isRoundOver() {
 		boolean calcRoundOver = true;
 		for (Participant participant : participants) {
 			for (Hand hand : participant.getHands()) {
@@ -155,64 +161,28 @@ public class Game {
 	}
 
 	/**
-	 * force Hit/Stay according to rules for Dealer
+	 * determine hit or stay for all participants
 	 */
-	protected void forceDealerHand() {
-
-		ParticipantDealer dealer = getDealer();
-		int dealerTotal = dealer.getCardTotal();
-		Hand dealerHand = dealer.getActiveHand();
-		if (HandPlayState.BlackJack.equals(dealerHand.getHandPlayState())
-				|| HandPlayState.Bust.equals(dealerHand.getHandPlayState())
-				|| HandPlayState.Stay.equals(dealerHand.getHandPlayState())) {
-			// do nothing
-		} else {
-			if (dealerTotal < 17) {
-				dealerHand.hit();
-			} else if (dealerHand.isHasHighAce() && dealerTotal < 18) {
-				dealerHand.hit();
-			} else if (maxNoBustPlayerTotal > dealerTotal) {
-				dealerHand.hit();
-			} else {
-				dealerHand.stay();
-			}
+	private void getParticipantsHitOrStay() {
+		for (Participant participant : participants) {
+			participant.hitOrStay();
 		}
 	}
-
+	
 	/**
-	 * for each Hand: when not already Bust or BlackJack, get Player input or force
-	 * Dealer Hit or Stay
+	 *  check state of whether ParticipantPlayers wants to keep playing
 	 */
-	protected void getPlayerInput() {
-
-		// get input from each Player for each Hand
+	private void askPlayersIfContinue() {
 		Participant[] players = getNormalPlayers();
 		for (Participant participant : players) {
-			for (Hand hand : participant.getHands()) {
-
-				// ask if they want Hit or Stay for this Hand
-				if (HandPlayState.BlackJack.equals(hand.getHandPlayState())
-						|| HandPlayState.Bust.equals(hand.getHandPlayState())
-						|| HandPlayState.Stay.equals(hand.getHandPlayState())) {
-				} else {
-					String input = "Hit";
-					// TODO: wait for input of Hit/Stay here
-					if ("Hit".equals(input)) {
-						hand.hit();
-					} else if ("Stay".equals(input)) {
-						hand.stay();
-					}
-				}
-			}
-			// check state of whether player wants to keep playing
 			if (participant.isStopPlaying()) {
 				playAgain = false;
 			}
 		}
-
 	}
 
-	protected void awardPoints() {
+
+	private void awardPoints() {
 		// get Dealer total to compare to Player total(s) so points can be properly
 		// awarded
 		ParticipantDealer dealer = getDealer();
@@ -266,7 +236,7 @@ public class Game {
 	 * 
 	 * @return ParticipantDealer
 	 */
-	public ParticipantDealer getDealer() {
+	private ParticipantDealer getDealer() {
 		return (ParticipantDealer) participants[dealerParticipantIndex];
 	}
 
@@ -275,7 +245,7 @@ public class Game {
 	 * 
 	 * @return Participant[] of all participants but not the Dealer
 	 */
-	public Participant[] getNormalPlayers() {
+	private Participant[] getNormalPlayers() {
 		return removeParticipant(participants, dealerParticipantIndex);
 	}
 
@@ -310,17 +280,17 @@ public class Game {
 	 * main while loop, logic could be copied and reused elsewhere
 	 */
 	public void main() {
+		initializeGame();
 		playAgain = true;
 		while (playAgain) {
-			initializeGame();
+			initializeRound();
 			dealFirstTwoCards();
 			calculateHandValues();
 			isRoundOver();
 
 			//TODO: make asynchronous with state flags rather than a while loop
 			while (!roundOver) {
-				getPlayerInput();
-				forceDealerHand();
+				getParticipantsHitOrStay();
 				dealCards(true, true);
 				calculateHandValues();
 				turnCards(true);
@@ -328,6 +298,7 @@ public class Game {
 			}
 			
 			awardPoints();
+			askPlayersIfContinue();
 			cleanupRound();
 		}
 		wrapUpGame();
