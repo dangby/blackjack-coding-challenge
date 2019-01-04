@@ -182,9 +182,11 @@ public class Game {
 	}
 
 
+	/**
+	 * End of round: award points to players and dealer according to predefined rules
+	 */
 	private void awardPoints() {
-		// get Dealer total to compare to Player total(s) so points can be properly
-		// awarded
+		// get Dealer total to compare to Hand totals to properly award points
 		ParticipantDealer dealer = getDealer();
 		int dealerTotal = dealer.getCardTotal();
 		Hand dealerHand = dealer.getActiveHand();
